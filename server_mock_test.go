@@ -86,6 +86,15 @@ func (s *MockServer) SendMessage(msg []byte) error {
 	return nil
 }
 
+func (s *MockServer) SendRAW(msg []byte) error {
+	s.logMethod("SendRAW")
+	if err := s.getNextErrToReturn(); err != nil {
+		return err
+	}
+	s.Requests = append(s.Requests, string(msg))
+	return nil
+}
+
 func (s *MockServer) NewSyncScanner() wire.SyncScanner {
 	s.logMethod("NewSyncScanner")
 	return nil

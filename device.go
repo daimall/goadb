@@ -31,10 +31,10 @@ func (c *Device) String() string {
 
 // get-product is documented, but not implemented, in the server.
 // TODO(z): Make product exported if get-product is ever implemented in adb.
-func (c *Device) product() (string, error) {
-	attr, err := c.getAttribute("get-product")
-	return attr, wrapClientError(err, c, "Product")
-}
+// func (c *Device) product() (string, error) {
+// 	attr, err := c.getAttribute("get-product")
+// 	return attr, wrapClientError(err, c, "Product")
+// }
 
 func (c *Device) Serial() (string, error) {
 	attr, err := c.getAttribute("get-serialno")
@@ -126,6 +126,34 @@ func (c *Device) RunCommand(cmd string, args ...string) (string, error) {
 
 	resp, err := conn.ReadUntilEof()
 	return string(resp), wrapClientError(err, c, "RunCommand")
+}
+
+/*
+ SendTCPMessage sends a TCP message to the device at the specified port using the dialDevice method.
+ It first sends a request message to the device and waits for a response by checking the status.
+ Then it sends the actual data and reads the response until the end of transmission.
+ If there is any error encountered during the process, the function returns nil and an error message
+ wrapped with additional information about the client and the function.
+*/
+
+func (c *Device) SendTCPMessage(port int, data []byte) ([]byte, error) {
+	conn, err := c.dialDevice()
+	if err != nil {
+		return nil, wrapClientError(err, c, "SendTCPMessage")
+	}
+	defer conn.Close()
+	req := fmt.Sprintf("tcp:%d", port)
+	if err = conn.SendMessage([]byte(req)); err != nil {
+		return nil, wrapClientError(err, c, "SendTCPMessage")
+	}
+	if _, err = conn.ReadStatus(req); err != nil {
+		return nil, wrapClientError(err, c, "SendTCPMessage")
+	}
+	if err = conn.SendRAW(data); err != nil {
+		return nil, wrapClientError(err, c, "SendTCPMessage")
+	}
+	resp, err := conn.ReadUntilEof()
+	return resp, wrapClientError(err, c, "SendTCPMessage")
 }
 
 /*

@@ -10,7 +10,7 @@ import (
 // Sender sends messages to the server.
 type Sender interface {
 	SendMessage(msg []byte) error
-
+	SendRAW(msg []byte) error
 	NewSyncSender() SyncSender
 
 	Close() error
@@ -35,6 +35,10 @@ func (s *realSender) SendMessage(msg []byte) error {
 
 	lengthAndMsg := fmt.Sprintf("%04x%s", len(msg), msg)
 	return writeFully(s.writer, []byte(lengthAndMsg))
+}
+
+func (s *realSender) SendRAW(msg []byte) error {
+	return writeFully(s.writer, msg)
 }
 
 func (s *realSender) NewSyncSender() SyncSender {
