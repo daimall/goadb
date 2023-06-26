@@ -134,11 +134,6 @@ func (c *Device) ConnDeviceTCP(port int) (conn *wire.Conn, err error) {
 	if conn, err = c.dialDevice(); err != nil {
 		return nil, wrapClientError(err, c, "ConnDeviceTCP")
 	}
-	defer func() {
-		if err != nil {
-			conn.Close()
-		}
-	}()
 	req := fmt.Sprintf("tcp:%d", port)
 	if err = conn.SendMessage([]byte(req)); err != nil {
 		return nil, wrapClientError(err, c, "ConnDeviceTCP")
