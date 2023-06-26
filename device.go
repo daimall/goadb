@@ -128,6 +128,27 @@ func (c *Device) RunCommand(cmd string, args ...string) (string, error) {
 	return string(resp), wrapClientError(err, c, "RunCommand")
 }
 
+// ConnDeviceTCP
+// 连接设备的TCP端口，通过重写tcpDialer接口，实现TCP到http的桥接
+func (c *Device) ConnDeviceTCP(port int) (conn *wire.Conn, err error) {
+	if conn, err = c.dialDevice(); err != nil {
+		return nil, wrapClientError(err, c, "ConnDeviceTCP")
+	}
+	defer func() {
+		if err != nil {
+			conn.Close()
+		}
+	}()
+	req := fmt.Sprintf("tcp:%d", port)
+	if err = conn.SendMessage([]byte(req)); err != nil {
+		return nil, wrapClientError(err, c, "ConnDeviceTCP")
+	}
+	if _, err = conn.ReadStatus(req); err != nil {
+		return nil, wrapClientError(err, c, "ConnDeviceTCP")
+	}
+	return conn, nil
+}
+
 /*
  SendTCPMessage sends a TCP message to the device at the specified port using the dialDevice method.
  It first sends a request message to the device and waits for a response by checking the status.
