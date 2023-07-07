@@ -129,6 +129,22 @@ func (c *Device) RunCommand(cmd string, args ...string) (string, error) {
 }
 
 // ConnDeviceTCP
+// 连接设备的UDS端点
+func (c *Device) ConnDeviceUDS(udspath string) (conn *wire.Conn, err error) {
+	if conn, err = c.dialDevice(); err != nil {
+		return nil, wrapClientError(err, c, "ConnDeviceUDS")
+	}
+	req := fmt.Sprintf("localfilesystem:%s", udspath)
+	if err = conn.SendMessage([]byte(req)); err != nil {
+		return nil, wrapClientError(err, c, "ConnDeviceUDS")
+	}
+	if _, err = conn.ReadStatus(req); err != nil {
+		return nil, wrapClientError(err, c, "ConnDeviceUDS")
+	}
+	return conn, nil
+}
+
+// ConnDeviceTCP
 // 连接设备的TCP端口，通过重写tcpDialer接口，实现TCP到http的桥接
 func (c *Device) ConnDeviceTCP(port int) (conn *wire.Conn, err error) {
 	if conn, err = c.dialDevice(); err != nil {
