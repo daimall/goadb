@@ -134,7 +134,7 @@ func (c *Device) ConnDeviceUDS(udspath string) (conn *wire.Conn, err error) {
 	if conn, err = c.dialDevice(); err != nil {
 		return nil, wrapClientError(err, c, "ConnDeviceUDS")
 	}
-	req := fmt.Sprintf("localfilesystem:%s", udspath)
+	req := fmt.Sprintf("localabstract:%s", udspath)
 	if err = conn.SendMessage([]byte(req)); err != nil {
 		return nil, wrapClientError(err, c, "ConnDeviceUDS")
 	}
